@@ -90,7 +90,7 @@
         <fields>
             <name>New_Stage</name>
             <choiceReferences>Opportunity_Stages</choiceReferences>
-            <dataType>Picklist</dataType>
+            <dataType>String</dataType>
             <defaultValue>
                 <elementReference>Get_Opportunity.StageName</elementReference>
             </defaultValue>
