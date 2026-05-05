@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QuickAction xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Opens the Clone Opportunity screen flow from the Account record page.</description>
+    <flowDefinition>AccountCloneOpportunity</flowDefinition>
+    <label>Clone Opportunity</label>
+    <optionsCreateFeedItem>false</optionsCreateFeedItem>
+    <type>Flow</type>
+</QuickAction>
