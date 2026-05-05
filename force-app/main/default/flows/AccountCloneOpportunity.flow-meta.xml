@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <description>Screen flow launched from an Account record page. Lets the user pick a Closed Won opportunity related to the account, then creates a clone with the name appended " - Cloned", Close Date set to 30 days from today, and Stage set to Prospecting.</description>
+    <interviewLabel>Account Clone Opportunity {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Account Clone Opportunity</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <runInMode>DefaultMode</runInMode>
+    <start>
+        <locationX>176</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_ClosedWonOpps</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+
+    <!-- ═══════════════════════════════════════
+         VARIABLES
+    ═══════════════════════════════════════ -->
+
+    <variables>
+        <name>recordId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+
+    <!-- ═══════════════════════════════════════
+         DYNAMIC CHOICE SET
+    ═══════════════════════════════════════ -->
+
+    <!-- Populates radio buttons with Closed Won opps for this Account -->
+    <dynamicChoiceSets>
+        <name>ChoiceSet_ClosedWonOpps</name>
+        <dataType>String</dataType>
+        <displayField>Name</displayField>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>AccountId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>recordId</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>StageName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Closed Won</stringValue>
+            </value>
+        </filters>
+        <object>Opportunity</object>
+        <sortField>Name</sortField>
+        <sortOrder>Asc</sortOrder>
+        <valueField>Id</valueField>
+    </dynamicChoiceSets>
+
+    <!-- ═══════════════════════════════════════
+         FORMULAS
+    ═══════════════════════════════════════ -->
+
+    <formulas>
+        <name>Formula_NewName</name>
+        <dataType>String</dataType>
+        <expression>{!Get_SelectedOpportunity.Name} &amp; " - Cloned"</expression>
+    </formulas>
+
+    <formulas>
+        <name>Formula_NewCloseDate</name>
+        <dataType>Date</dataType>
+        <expression>TODAY() + 30</expression>
+    </formulas>
+
+    <!-- ═══════════════════════════════════════
+         GET RECORDS
+    ═══════════════════════════════════════ -->
+
+    <!-- Check whether any Closed Won opps exist for this Account -->
+    <recordLookups>
+        <name>Get_ClosedWonOpps</name>
+        <label>Get Closed Won Opportunities</label>
+        <locationX>176</locationX>
+        <locationY>120</locationY>
+        <assignNullValuesIfNoRecordsFound>true</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Decision_OppsExist</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>AccountId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>recordId</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>StageName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Closed Won</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Opportunity</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+
+    <!-- Retrieve full details of the opportunity the user selected -->
+    <recordLookups>
+        <name>Get_SelectedOpportunity</name>
+        <label>Get Selected Opportunity</label>
+        <locationX>176</locationX>
+        <locationY>480</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Screen_Confirm</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Input_SelectedOppId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Opportunity</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+
+    <!-- ═══════════════════════════════════════
+         DECISIONS
+    ═══════════════════════════════════════ -->
+
+    <decisions>
+        <name>Decision_OppsExist</name>
+        <label>Opportunities Exist?</label>
+        <locationX>176</locationX>
+        <locationY>240</locationY>
+        <defaultConnector>
+            <targetReference>Screen_NoOpportunities</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>No Opportunities</defaultConnectorLabel>
+        <rules>
+            <name>Outcome_HasOpportunities</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_ClosedWonOpps</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Screen_SelectOpportunity</targetReference>
+            </connector>
+            <label>Has Opportunities</label>
+        </rules>
+    </decisions>
+
+    <!-- ═══════════════════════════════════════
+         SCREENS
+    ═══════════════════════════════════════ -->
+
+    <!-- Screen: No Closed Won opps found — terminal -->
+    <screens>
+        <name>Screen_NoOpportunities</name>
+        <label>No Opportunities Found</label>
+        <locationX>440</locationX>
+        <locationY>360</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>Display_NoOpps</name>
+            <fieldText>&lt;p&gt;There are no &lt;b&gt;Closed Won&lt;/b&gt; opportunities associated with this account to clone.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+
+    <!-- Screen 1: User picks which Closed Won opp to clone -->
+    <screens>
+        <name>Screen_SelectOpportunity</name>
+        <label>Select Opportunity to Clone</label>
+        <locationX>176</locationX>
+        <locationY>360</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Get_SelectedOpportunity</targetReference>
+        </connector>
+        <fields>
+            <name>Display_SelectIntro</name>
+            <fieldText>&lt;p&gt;Select a &lt;b&gt;Closed Won&lt;/b&gt; opportunity to clone. A new opportunity will be created with all values copied, except the name will have " - Cloned" appended, the Close Date will be set to 30 days from today, and the Stage will be set to &lt;b&gt;Prospecting&lt;/b&gt;.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <fields>
+            <name>Input_SelectedOppId</name>
+            <choiceReferences>ChoiceSet_ClosedWonOpps</choiceReferences>
+            <dataType>String</dataType>
+            <fieldText>Opportunity to Clone</fieldText>
+            <fieldType>RadioButtons</fieldType>
+            <isRequired>true</isRequired>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+
+    <!-- Screen 2: Confirm details of the new opportunity before creating -->
+    <screens>
+        <name>Screen_Confirm</name>
+        <label>Confirm Clone</label>
+        <locationX>176</locationX>
+        <locationY>600</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Create_ClonedOpportunity</targetReference>
+        </connector>
+        <fields>
+            <name>Display_ConfirmDetails</name>
+            <fieldText>&lt;p&gt;The following opportunity will be created. Click &lt;b&gt;Finish&lt;/b&gt; to confirm.&lt;/p&gt;&lt;p&gt;&lt;b&gt;Name:&lt;/b&gt; {!Formula_NewName}&lt;/p&gt;&lt;p&gt;&lt;b&gt;Stage:&lt;/b&gt; Prospecting&lt;/p&gt;&lt;p&gt;&lt;b&gt;Close Date:&lt;/b&gt; {!Formula_NewCloseDate}&lt;/p&gt;&lt;p&gt;&lt;b&gt;Amount:&lt;/b&gt; {!Get_SelectedOpportunity.Amount}&lt;/p&gt;&lt;p&gt;&lt;b&gt;Type:&lt;/b&gt; {!Get_SelectedOpportunity.Type}&lt;/p&gt;&lt;p&gt;&lt;b&gt;Lead Source:&lt;/b&gt; {!Get_SelectedOpportunity.LeadSource}&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+
+    <!-- Screen 3: Success confirmation -->
+    <screens>
+        <name>Screen_Success</name>
+        <label>Opportunity Cloned</label>
+        <locationX>176</locationX>
+        <locationY>840</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>Display_SuccessMessage</name>
+            <fieldText>&lt;p&gt;&lt;b&gt;Opportunity cloned successfully!&lt;/b&gt;&lt;/p&gt;&lt;p&gt;A new opportunity &lt;b&gt;{!Formula_NewName}&lt;/b&gt; has been created in the &lt;b&gt;Prospecting&lt;/b&gt; stage with a Close Date of &lt;b&gt;{!Formula_NewCloseDate}&lt;/b&gt;.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+
+    <!-- ═══════════════════════════════════════
+         RECORD CREATES
+    ═══════════════════════════════════════ -->
+
+    <recordCreates>
+        <name>Create_ClonedOpportunity</name>
+        <label>Create Cloned Opportunity</label>
+        <locationX>176</locationX>
+        <locationY>720</locationY>
+        <connector>
+            <targetReference>Screen_Success</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>AccountId</field>
+            <value>
+                <elementReference>recordId</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Name</field>
+            <value>
+                <elementReference>Formula_NewName</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>CloseDate</field>
+            <value>
+                <elementReference>Formula_NewCloseDate</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>StageName</field>
+            <value>
+                <stringValue>Prospecting</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Amount</field>
+            <value>
+                <elementReference>Get_SelectedOpportunity.Amount</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Description</field>
+            <value>
+                <elementReference>Get_SelectedOpportunity.Description</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>LeadSource</field>
+            <value>
+                <elementReference>Get_SelectedOpportunity.LeadSource</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Type</field>
+            <value>
+                <elementReference>Get_SelectedOpportunity.Type</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>Get_SelectedOpportunity.OwnerId</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>NextStep</field>
+            <value>
+                <elementReference>Get_SelectedOpportunity.NextStep</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>CampaignId</field>
+            <value>
+                <elementReference>Get_SelectedOpportunity.CampaignId</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Opportunity</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
+
+</Flow>
