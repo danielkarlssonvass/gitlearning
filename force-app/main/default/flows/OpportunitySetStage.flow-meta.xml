@@ -6,7 +6,6 @@
         <name>Opportunity_Stages</name>
         <dataType>Picklist</dataType>
         <displayField>StageName</displayField>
-        <object>Opportunity</object>
         <picklistField>StageName</picklistField>
         <picklistObject>Opportunity</picklistObject>
     </dynamicChoiceSets>
