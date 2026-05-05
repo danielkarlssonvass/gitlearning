@@ -112,7 +112,7 @@
         <allowPause>false</allowPause>
         <fields>
             <name>Display_SuccessMessage</name>
-            <fieldText>&lt;p&gt;&lt;b&gt;Close Date updated successfully.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;New Close Date: &lt;b&gt;{!Screen_UpdateCloseDate.Input_CloseDate}&lt;/b&gt;&lt;/p&gt;</fieldText>
+            <fieldText>&lt;p&gt;&lt;b&gt;Close Date updated successfully.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;New Close Date: &lt;b&gt;{!Input_CloseDate}&lt;/b&gt;&lt;/p&gt;</fieldText>
             <fieldType>DisplayText</fieldType>
         </fields>
         <showFooter>true</showFooter>
@@ -154,7 +154,7 @@
             <name>Outcome_DateWasChanged</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
-                <leftValueReference>Screen_UpdateCloseDate.Input_CloseDate</leftValueReference>
+                <leftValueReference>Input_CloseDate</leftValueReference>
                 <operator>NotEqualTo</operator>
                 <rightValue>
                     <elementReference>Get_Opportunity.CloseDate</elementReference>
@@ -190,7 +190,7 @@
         <inputAssignments>
             <field>CloseDate</field>
             <value>
-                <elementReference>Screen_UpdateCloseDate.Input_CloseDate</elementReference>
+                <elementReference>Input_CloseDate</elementReference>
             </value>
         </inputAssignments>
         <object>Opportunity</object>
