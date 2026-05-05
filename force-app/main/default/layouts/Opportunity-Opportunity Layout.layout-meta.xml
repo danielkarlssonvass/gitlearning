@@ -255,9 +255,6 @@
     </platformActionList>
     <quickActionList>
         <quickActionListItems>
-            <quickActionName>Opportunity.Set_Close_Date</quickActionName>
-        </quickActionListItems>
-        <quickActionListItems>
             <quickActionName>FeedItem.TextPost</quickActionName>
         </quickActionListItems>
         <quickActionListItems>
