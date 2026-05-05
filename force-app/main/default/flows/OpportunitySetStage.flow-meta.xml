@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <description>Screen flow launched from an Opportunity record to view the current stage and select a new one.</description>
+    <dynamicChoiceSets>
+        <name>Opportunity_Stages</name>
+        <dataType>Picklist</dataType>
+        <displayField>StageName</displayField>
+        <object>Opportunity</object>
+        <picklistField>StageName</picklistField>
+        <picklistObject>Opportunity</picklistObject>
+    </dynamicChoiceSets>
+    <interviewLabel>Opportunity Set Stage {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Set Stage</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value><stringValue>LightningFlowBuilder</stringValue></value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value><stringValue>AUTO_LAYOUT_CANVAS</stringValue></value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <recordLookups>
+        <name>Get_Opportunity</name>
+        <label>Get Opportunity</label>
+        <locationX>176</locationX>
+        <locationY>120</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector><targetReference>Screen_Set_Stage</targetReference></connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value><elementReference>recordId</elementReference></value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Opportunity</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <name>Update_Opportunity_Stage</name>
+        <label>Update Opportunity Stage</label>
+        <locationX>88</locationX>
+        <locationY>480</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value><elementReference>recordId</elementReference></value>
+        </filters>
+        <inputAssignments>
+            <field>StageName</field>
+            <value><elementReference>New_Stage</elementReference></value>
+        </inputAssignments>
+        <object>Opportunity</object>
+    </recordUpdates>
+    <decisions>
+        <name>Stage_Changed</name>
+        <label>Stage Changed?</label>
+        <locationX>176</locationX>
+        <locationY>360</locationY>
+        <defaultConnectorLabel>Same Stage</defaultConnectorLabel>
+        <rules>
+            <name>Stage_Is_Different</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>New_Stage</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue><elementReference>Get_Opportunity.StageName</elementReference></rightValue>
+            </conditions>
+            <connector><targetReference>Update_Opportunity_Stage</targetReference></connector>
+            <label>New Stage Selected</label>
+        </rules>
+    </decisions>
+    <screens>
+        <name>Screen_Set_Stage</name>
+        <label>Set Stage</label>
+        <locationX>176</locationX>
+        <locationY>240</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector><targetReference>Stage_Changed</targetReference></connector>
+        <fields>
+            <name>Current_Stage_Display</name>
+            <fieldText>&lt;p&gt;&lt;strong&gt;Current Stage:&lt;/strong&gt; {!Get_Opportunity.StageName}&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <fields>
+            <name>New_Stage</name>
+            <choiceReferences>Opportunity_Stages</choiceReferences>
+            <dataType>Picklist</dataType>
+            <defaultValue>
+                <elementReference>Get_Opportunity.StageName</elementReference>
+            </defaultValue>
+            <fieldText>Select New Stage</fieldText>
+            <fieldType>DropdownBox</fieldType>
+            <isRequired>true</isRequired>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <runInMode>DefaultMode</runInMode>
+    <start>
+        <locationX>176</locationX>
+        <locationY>0</locationY>
+        <connector><targetReference>Get_Opportunity</targetReference></connector>
+    </start>
+    <status>Active</status>
+    <variables>
+        <name>recordId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>
