@@ -3,7 +3,5 @@
     <description>Opens the Update Close Date screen flow from the Opportunity record page.</description>
     <flowDefinition>OpportunityUpdateCloseDate</flowDefinition>
     <label>Set Close Date</label>
-    <optionsCreateFeedItem>false</optionsCreateFeedItem>
-    <targetObject>Opportunity</targetObject>
     <type>Flow</type>
 </QuickAction>
