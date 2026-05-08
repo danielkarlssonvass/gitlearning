@@ -123,7 +123,41 @@
             </inputParameters>
             <inputParameters>
                 <name>columns</name>
-                <value><stringValue>[{"label":"Opportunity Name","fieldName":"Name","type":"text"},{"label":"Stage","fieldName":"StageName","type":"text"}]</stringValue></value>
+                <value>
+                    <complexValue>
+                        <fields>
+                            <name>label</name>
+                            <value><stringValue>Opportunity Name</stringValue></value>
+                        </fields>
+                        <fields>
+                            <name>fieldName</name>
+                            <value><stringValue>Name</stringValue></value>
+                        </fields>
+                        <fields>
+                            <name>type</name>
+                            <value><stringValue>text</stringValue></value>
+                        </fields>
+                    </complexValue>
+                </value>
+            </inputParameters>
+            <inputParameters>
+                <name>columns</name>
+                <value>
+                    <complexValue>
+                        <fields>
+                            <name>label</name>
+                            <value><stringValue>Stage</stringValue></value>
+                        </fields>
+                        <fields>
+                            <name>fieldName</name>
+                            <value><stringValue>StageName</stringValue></value>
+                        </fields>
+                        <fields>
+                            <name>type</name>
+                            <value><stringValue>text</stringValue></value>
+                        </fields>
+                    </complexValue>
+                </value>
             </inputParameters>
             <inputParameters>
                 <name>keyField</name>
