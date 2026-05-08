@@ -46,7 +46,16 @@
         <objectType>Opportunity</objectType>
     </variables>
 
-    <!-- Step 1: Get child Opportunities that are not Closed Won -->
+    <!-- Dynamic Choice Set -->
+    <dynamicChoiceSets>
+        <name>PicklistChoiceSet_Stage</name>
+        <dataType>Picklist</dataType>
+        <displayField>label</displayField>
+        <picklistField>StageName</picklistField>
+        <picklistObject>Opportunity</picklistObject>
+    </dynamicChoiceSets>
+
+    <!-- Get Records -->
     <recordLookups>
         <name>Get_Opportunities</name>
         <label>Get Open Opportunities</label>
@@ -73,14 +82,28 @@
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
 
-    <!-- Step 2: Screen — data table to select opportunities + dropdown for new stage -->
-    <dynamicChoiceSets>
-        <name>PicklistChoiceSet_Stage</name>
-        <dataType>Picklist</dataType>
-        <displayField>label</displayField>
-        <picklistField>StageName</picklistField>
-        <picklistObject>Opportunity</picklistObject>
-    </dynamicChoiceSets>
+    <!-- Decisions -->
+    <decisions>
+        <name>Decision_Has_Selection</name>
+        <label>Has Selection?</label>
+        <locationX>176</locationX>
+        <locationY>360</locationY>
+        <defaultConnector><targetReference>Screen_No_Selection</targetReference></defaultConnector>
+        <defaultConnectorLabel>No Selection</defaultConnectorLabel>
+        <rules>
+            <name>Has_Selection</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>selectedOpportunities</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue><booleanValue>false</booleanValue></rightValue>
+            </conditions>
+            <connector><targetReference>Loop_Opportunities</targetReference></connector>
+            <label>Has Selection</label>
+        </rules>
+    </decisions>
+
+    <!-- Screens — all grouped together -->
     <screens>
         <name>Screen_Select_Stage</name>
         <label>Select Opportunities and New Stage</label>
@@ -124,29 +147,6 @@
         <showFooter>true</showFooter>
         <showHeader>true</showHeader>
     </screens>
-
-    <!-- Step 3: Decision — was at least one opportunity selected? -->
-    <decisions>
-        <name>Decision_Has_Selection</name>
-        <label>Has Selection?</label>
-        <locationX>176</locationX>
-        <locationY>360</locationY>
-        <defaultConnector><targetReference>Screen_No_Selection</targetReference></defaultConnector>
-        <defaultConnectorLabel>No Selection</defaultConnectorLabel>
-        <rules>
-            <name>Has_Selection</name>
-            <conditionLogic>and</conditionLogic>
-            <conditions>
-                <leftValueReference>selectedOpportunities</leftValueReference>
-                <operator>IsNull</operator>
-                <rightValue><booleanValue>false</booleanValue></rightValue>
-            </conditions>
-            <connector><targetReference>Loop_Opportunities</targetReference></connector>
-            <label>Has Selection</label>
-        </rules>
-    </decisions>
-
-    <!-- Error path: no opportunities selected -->
     <screens>
         <name>Screen_No_Selection</name>
         <label>No Opportunities Selected</label>
@@ -164,7 +164,7 @@
         <showHeader>true</showHeader>
     </screens>
 
-    <!-- Step 4: Loop through selected opportunities, assign new stage -->
+    <!-- Loop and Assignments -->
     <loops>
         <name>Loop_Opportunities</name>
         <label>Loop Opportunities</label>
@@ -193,7 +193,7 @@
         <connector><targetReference>Loop_Opportunities</targetReference></connector>
     </assignments>
 
-    <!-- Step 5: Bulk update all modified opportunities -->
+    <!-- Record Update -->
     <recordUpdates>
         <name>Update_Opportunities</name>
         <label>Update Opportunities</label>
