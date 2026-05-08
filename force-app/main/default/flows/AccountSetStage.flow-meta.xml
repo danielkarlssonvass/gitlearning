@@ -129,6 +129,10 @@
                 <name>keyField</name>
                 <value><stringValue>Id</stringValue></value>
             </inputParameters>
+            <inputParameters>
+                <name>selectionMode</name>
+                <value><stringValue>multi</stringValue></value>
+            </inputParameters>
             <isRequired>false</isRequired>
             <outputParameters>
                 <assignToReference>selectedOpportunities</assignToReference>
