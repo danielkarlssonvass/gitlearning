@@ -133,6 +133,10 @@
                 <name>selectionMode</name>
                 <value><stringValue>multi</stringValue></value>
             </inputParameters>
+            <inputParameters>
+                <name>minRowSelection</name>
+                <value><numberValue>1</numberValue></value>
+            </inputParameters>
             <isRequired>false</isRequired>
             <outputParameters>
                 <assignToReference>selectedOpportunities</assignToReference>
