@@ -122,44 +122,6 @@
                 <value><elementReference>Get_Opportunities</elementReference></value>
             </inputParameters>
             <inputParameters>
-                <name>columns</name>
-                <value>
-                    <complexValue>
-                        <fields>
-                            <name>label</name>
-                            <value><stringValue>Opportunity Name</stringValue></value>
-                        </fields>
-                        <fields>
-                            <name>fieldName</name>
-                            <value><stringValue>Name</stringValue></value>
-                        </fields>
-                        <fields>
-                            <name>type</name>
-                            <value><stringValue>text</stringValue></value>
-                        </fields>
-                    </complexValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
-                <name>columns</name>
-                <value>
-                    <complexValue>
-                        <fields>
-                            <name>label</name>
-                            <value><stringValue>Stage</stringValue></value>
-                        </fields>
-                        <fields>
-                            <name>fieldName</name>
-                            <value><stringValue>StageName</stringValue></value>
-                        </fields>
-                        <fields>
-                            <name>type</name>
-                            <value><stringValue>text</stringValue></value>
-                        </fields>
-                    </complexValue>
-                </value>
-            </inputParameters>
-            <inputParameters>
                 <name>keyField</name>
                 <value><stringValue>Id</stringValue></value>
             </inputParameters>
