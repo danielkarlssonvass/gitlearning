@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <description>Screen flow to set the stage on child Opportunities from the Account record page.</description>
+    <interviewLabel>Account Set Stage {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Account Set Stage</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value><stringValue>LightningFlowBuilder</stringValue></value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value><stringValue>AUTO_LAYOUT_CANVAS</stringValue></value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <runInMode>DefaultMode</runInMode>
+    <start>
+        <locationX>176</locationX>
+        <locationY>0</locationY>
+        <connector><targetReference>Get_Opportunities</targetReference></connector>
+    </start>
+    <status>Active</status>
+
+    <!-- Variables -->
+    <variables>
+        <name>recordId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>selectedOpportunities</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Opportunity</objectType>
+    </variables>
+    <variables>
+        <name>opportunitiesToUpdate</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Opportunity</objectType>
+    </variables>
+
+    <!-- Dynamic Choice Set -->
+    <dynamicChoiceSets>
+        <name>PicklistChoiceSet_Stage</name>
+        <dataType>Picklist</dataType>
+        <displayField>label</displayField>
+        <picklistField>StageName</picklistField>
+        <picklistObject>Opportunity</picklistObject>
+    </dynamicChoiceSets>
+
+    <!-- Get Records -->
+    <recordLookups>
+        <name>Get_Opportunities</name>
+        <label>Get Open Opportunities</label>
+        <locationX>176</locationX>
+        <locationY>120</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector><targetReference>Screen_Select_Stage</targetReference></connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>AccountId</field>
+            <operator>EqualTo</operator>
+            <value><elementReference>recordId</elementReference></value>
+        </filters>
+        <filters>
+            <field>StageName</field>
+            <operator>NotEqualTo</operator>
+            <value><stringValue>Closed Won</stringValue></value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Opportunity</object>
+        <queriedFields>Id</queriedFields>
+        <queriedFields>Name</queriedFields>
+        <queriedFields>StageName</queriedFields>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+
+    <!-- Decisions -->
+    <decisions>
+        <name>Decision_Has_Selection</name>
+        <label>Has Selection?</label>
+        <locationX>176</locationX>
+        <locationY>360</locationY>
+        <defaultConnector><targetReference>Screen_No_Selection</targetReference></defaultConnector>
+        <defaultConnectorLabel>No Selection</defaultConnectorLabel>
+        <rules>
+            <name>Has_Selection</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>selectedOpportunities</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue><booleanValue>false</booleanValue></rightValue>
+            </conditions>
+            <connector><targetReference>Loop_Opportunities</targetReference></connector>
+            <label>Has Selection</label>
+        </rules>
+    </decisions>
+
+    <!-- Screens — all grouped together -->
+    <screens>
+        <name>Screen_Select_Stage</name>
+        <label>Select Opportunities and New Stage</label>
+        <locationX>176</locationX>
+        <locationY>240</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector><targetReference>Decision_Has_Selection</targetReference></connector>
+        <fields>
+            <name>DataTable_Opportunities</name>
+            <dataTypeMappings>
+                <typeName>T</typeName>
+                <typeValue>Opportunity</typeValue>
+            </dataTypeMappings>
+            <extensionName>flowruntime:datatable</extensionName>
+            <fieldType>ComponentInstance</fieldType>
+            <inputParameters>
+                <name>label</name>
+                <value><stringValue>Opportunities</stringValue></value>
+            </inputParameters>
+            <inputParameters>
+                <name>selectionMode</name>
+                <value><stringValue>MULTI_SELECT</stringValue></value>
+            </inputParameters>
+            <inputParameters>
+                <name>minRowSelection</name>
+                <value><numberValue>1.0</numberValue></value>
+            </inputParameters>
+            <inputParameters>
+                <name>shouldDisplayLabel</name>
+                <value><booleanValue>true</booleanValue></value>
+            </inputParameters>
+            <inputParameters>
+                <name>tableData</name>
+                <value><elementReference>Get_Opportunities</elementReference></value>
+            </inputParameters>
+            <inputParameters>
+                <name>isShowSearchBar</name>
+                <value><booleanValue>true</booleanValue></value>
+            </inputParameters>
+            <inputParameters>
+                <name>columns</name>
+                <value><stringValue>[{&quot;apiName&quot;:&quot;Name&quot;,&quot;guid&quot;:&quot;column-0001&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:0,&quot;sortable&quot;:false,&quot;label&quot;:&quot;Opportunity Name&quot;,&quot;type&quot;:&quot;text&quot;},{&quot;apiName&quot;:&quot;StageName&quot;,&quot;guid&quot;:&quot;column-0002&quot;,&quot;editable&quot;:false,&quot;hasCustomHeaderLabel&quot;:false,&quot;customHeaderLabel&quot;:&quot;&quot;,&quot;wrapText&quot;:true,&quot;order&quot;:1,&quot;sortable&quot;:false,&quot;label&quot;:&quot;Stage&quot;,&quot;type&quot;:&quot;text&quot;}]</stringValue></value>
+            </inputParameters>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <outputParameters>
+                <assignToReference>selectedOpportunities</assignToReference>
+                <name>selectedRows</name>
+            </outputParameters>
+            <storeOutputAutomatically>false</storeOutputAutomatically>
+        </fields>
+        <fields>
+            <name>Dropdown_Stage</name>
+            <choiceReferences>PicklistChoiceSet_Stage</choiceReferences>
+            <dataType>String</dataType>
+            <fieldText>New Stage</fieldText>
+            <fieldType>DropdownBox</fieldType>
+            <isRequired>true</isRequired>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <name>Screen_No_Selection</name>
+        <label>No Opportunities Selected</label>
+        <locationX>352</locationX>
+        <locationY>480</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>Text_No_Selection</name>
+            <fieldText>&lt;p&gt;Please select at least one opportunity to update.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+
+    <!-- Loop and Assignments -->
+    <loops>
+        <name>Loop_Opportunities</name>
+        <label>Loop Opportunities</label>
+        <locationX>176</locationX>
+        <locationY>480</locationY>
+        <collectionReference>selectedOpportunities</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector><targetReference>Assignment_Set_Stage</targetReference></nextValueConnector>
+        <noMoreValuesConnector><targetReference>Update_Opportunities</targetReference></noMoreValuesConnector>
+    </loops>
+    <assignments>
+        <name>Assignment_Set_Stage</name>
+        <label>Set Stage on Opportunity</label>
+        <locationX>176</locationX>
+        <locationY>600</locationY>
+        <assignmentItems>
+            <assignToReference>Loop_Opportunities.StageName</assignToReference>
+            <operator>Assign</operator>
+            <value><elementReference>Dropdown_Stage</elementReference></value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>opportunitiesToUpdate</assignToReference>
+            <operator>Add</operator>
+            <value><elementReference>Loop_Opportunities</elementReference></value>
+        </assignmentItems>
+        <connector><targetReference>Loop_Opportunities</targetReference></connector>
+    </assignments>
+
+    <!-- Record Update -->
+    <recordUpdates>
+        <name>Update_Opportunities</name>
+        <label>Update Opportunities</label>
+        <locationX>176</locationX>
+        <locationY>720</locationY>
+        <inputReference>opportunitiesToUpdate</inputReference>
+    </recordUpdates>
+
+</Flow>
