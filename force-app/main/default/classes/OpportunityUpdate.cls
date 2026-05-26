@@ -16,5 +16,3 @@ public with sharing class OpportunityUpdate {
         }
     }
 }
-    //test
-}
