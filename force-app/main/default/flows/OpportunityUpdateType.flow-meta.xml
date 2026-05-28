@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <description>Screen flow to update the Opportunity Type field. Adds " - Upsell/Renewal" to the name when Type changes from New Customer, and removes it when Type changes to New Customer.</description>
+    <interviewLabel>Opportunity Update Type {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Opportunity Update Type</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value><stringValue>LightningFlowBuilder</stringValue></value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value><stringValue>AUTO_LAYOUT_CANVAS</stringValue></value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <runInMode>DefaultMode</runInMode>
+    <start>
+        <locationX>176</locationX>
+        <locationY>0</locationY>
+        <connector><targetReference>Get_Opportunity</targetReference></connector>
+    </start>
+    <status>Active</status>
+    <variables>
+        <name>recordId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <formulas>
+        <name>Formula_NameWithSuffix</name>
+        <dataType>String</dataType>
+        <expression>{!Get_Opportunity.Name} &amp; " - Upsell/Renewal"</expression>
+    </formulas>
+    <formulas>
+        <name>Formula_NameWithoutSuffix</name>
+        <dataType>String</dataType>
+        <expression>SUBSTITUTE({!Get_Opportunity.Name}, " - Upsell/Renewal", "")</expression>
+    </formulas>
+    <dynamicChoiceSets>
+        <name>PicklistChoiceSet_Type</name>
+        <dataType>Picklist</dataType>
+        <displayField>label</displayField>
+        <picklistField>Type</picklistField>
+        <picklistObject>Opportunity</picklistObject>
+    </dynamicChoiceSets>
+    <recordLookups>
+        <name>Get_Opportunity</name>
+        <label>Get Opportunity</label>
+        <locationX>176</locationX>
+        <locationY>120</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector><targetReference>Screen_Update_Type</targetReference></connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value><elementReference>recordId</elementReference></value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Opportunity</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <screens>
+        <name>Screen_Update_Type</name>
+        <label>Update Opportunity Type</label>
+        <locationX>176</locationX>
+        <locationY>240</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector><targetReference>Decision_Type_Changed</targetReference></connector>
+        <fields>
+            <name>Input_Type</name>
+            <choiceReferences>PicklistChoiceSet_Type</choiceReferences>
+            <dataType>String</dataType>
+            <defaultValue>
+                <elementReference>Get_Opportunity.Type</elementReference>
+            </defaultValue>
+            <fieldText>Type</fieldText>
+            <fieldType>DropdownBox</fieldType>
+            <isRequired>true</isRequired>
+        </fields>
+        <nextOrFinishButtonLabel>Update Type</nextOrFinishButtonLabel>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <decisions>
+        <name>Decision_Type_Changed</name>
+        <label>Type Changed?</label>
+        <locationX>176</locationX>
+        <locationY>360</locationY>
+        <defaultConnectorLabel>No Change</defaultConnectorLabel>
+        <rules>
+            <name>Outcome_Type_Changed</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Input_Type</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <elementReference>Get_Opportunity.Type</elementReference>
+                </rightValue>
+            </conditions>
+            <connector><targetReference>Decision_Old_Was_New_Customer</targetReference></connector>
+            <label>Type Changed</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Decision_Old_Was_New_Customer</name>
+        <label>Old Type Was New Customer?</label>
+        <locationX>88</locationX>
+        <locationY>480</locationY>
+        <defaultConnector><targetReference>Decision_New_Is_New_Customer</targetReference></defaultConnector>
+        <defaultConnectorLabel>Other Type</defaultConnectorLabel>
+        <rules>
+            <name>Outcome_Was_New_Customer</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Opportunity.Type</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>New Customer</stringValue>
+                </rightValue>
+            </conditions>
+            <connector><targetReference>Update_Opp_AddSuffix</targetReference></connector>
+            <label>Was New Customer</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Decision_New_Is_New_Customer</name>
+        <label>New Type Is New Customer?</label>
+        <locationX>264</locationX>
+        <locationY>600</locationY>
+        <defaultConnector><targetReference>Update_Opp_TypeOnly</targetReference></defaultConnector>
+        <defaultConnectorLabel>Other Type</defaultConnectorLabel>
+        <rules>
+            <name>Outcome_New_Is_New_Customer</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Input_Type</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>New Customer</stringValue>
+                </rightValue>
+            </conditions>
+            <connector><targetReference>Update_Opp_RemoveSuffix</targetReference></connector>
+            <label>New Is New Customer</label>
+        </rules>
+    </decisions>
+    <recordUpdates>
+        <name>Update_Opp_AddSuffix</name>
+        <label>Update Opportunity - Add Upsell/Renewal Suffix</label>
+        <locationX>88</locationX>
+        <locationY>600</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value><elementReference>recordId</elementReference></value>
+        </filters>
+        <inputAssignments>
+            <field>Name</field>
+            <value><elementReference>Formula_NameWithSuffix</elementReference></value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Type</field>
+            <value><elementReference>Input_Type</elementReference></value>
+        </inputAssignments>
+        <object>Opportunity</object>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Update_Opp_RemoveSuffix</name>
+        <label>Update Opportunity - Remove Upsell/Renewal Suffix</label>
+        <locationX>176</locationX>
+        <locationY>720</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value><elementReference>recordId</elementReference></value>
+        </filters>
+        <inputAssignments>
+            <field>Name</field>
+            <value><elementReference>Formula_NameWithoutSuffix</elementReference></value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Type</field>
+            <value><elementReference>Input_Type</elementReference></value>
+        </inputAssignments>
+        <object>Opportunity</object>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Update_Opp_TypeOnly</name>
+        <label>Update Opportunity - Type Only</label>
+        <locationX>352</locationX>
+        <locationY>720</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value><elementReference>recordId</elementReference></value>
+        </filters>
+        <inputAssignments>
+            <field>Type</field>
+            <value><elementReference>Input_Type</elementReference></value>
+        </inputAssignments>
+        <object>Opportunity</object>
+    </recordUpdates>
+</Flow>
