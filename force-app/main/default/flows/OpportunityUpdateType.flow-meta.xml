@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <description>Screen flow to update the Opportunity Type field. Appends " - Upsell/Renewal" to Name when changing away from New Customer, and removes it when changing to New Customer.</description>
+    <interviewLabel>Opportunity Update Type {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Opportunity Update Type</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value><stringValue>LightningFlowBuilder</stringValue></value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value><stringValue>AUTO_LAYOUT_CANVAS</stringValue></value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <runInMode>DefaultMode</runInMode>
+    <start>
+        <locationX>176</locationX>
+        <locationY>0</locationY>
+        <connector><targetReference>Get_Opportunity</targetReference></connector>
+    </start>
+    <status>Active</status>
+    <assignments>
+        <name>Assignment_Set_Name_Default</name>
+        <label>Set Name Default</label>
+        <locationX>88</locationX>
+        <locationY>480</locationY>
+        <assignmentItems>
+            <assignToReference>var_NewName</assignToReference>
+            <operator>Assign</operator>
+            <value><elementReference>Get_Opportunity.Name</elementReference></value>
+        </assignmentItems>
+        <connector><targetReference>Decision_From_New_Customer</targetReference></connector>
+    </assignments>
+    <assignments>
+        <name>Assignment_Append_Upsell</name>
+        <label>Append Upsell/Renewal to Name</label>
+        <locationX>0</locationX>
+        <locationY>720</locationY>
+        <assignmentItems>
+            <assignToReference>var_NewName</assignToReference>
+            <operator>Add</operator>
+            <value><stringValue> - Upsell/Renewal</stringValue></value>
+        </assignmentItems>
+        <connector><targetReference>Update_Opportunity</targetReference></connector>
+    </assignments>
+    <assignments>
+        <name>Assignment_Remove_Upsell</name>
+        <label>Remove Upsell/Renewal from Name</label>
+        <locationX>88</locationX>
+        <locationY>840</locationY>
+        <assignmentItems>
+            <assignToReference>var_NewName</assignToReference>
+            <operator>Assign</operator>
+            <value><elementReference>Formula_NameWithoutUpsell</elementReference></value>
+        </assignmentItems>
+        <connector><targetReference>Update_Opportunity</targetReference></connector>
+    </assignments>
+    <decisions>
+        <name>Decision_Type_Changed</name>
+        <label>Type Changed?</label>
+        <locationX>176</locationX>
+        <locationY>360</locationY>
+        <defaultConnectorLabel>No Change</defaultConnectorLabel>
+        <rules>
+            <name>Outcome_Type_Changed</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Input_Type</leftValueReference>
+                <operator>NotEqualTo</operator>
+                <rightValue>
+                    <elementReference>Get_Opportunity.Type</elementReference>
+                </rightValue>
+            </conditions>
+            <connector><targetReference>Assignment_Set_Name_Default</targetReference></connector>
+            <label>Type Changed</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Decision_From_New_Customer</name>
+        <label>Was Type New Customer?</label>
+        <locationX>88</locationX>
+        <locationY>600</locationY>
+        <defaultConnector><targetReference>Decision_To_New_Customer</targetReference></defaultConnector>
+        <defaultConnectorLabel>No</defaultConnectorLabel>
+        <rules>
+            <name>Outcome_From_New_Customer</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Opportunity.Type</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>New Customer</stringValue>
+                </rightValue>
+            </conditions>
+            <connector><targetReference>Assignment_Append_Upsell</targetReference></connector>
+            <label>Yes - Was New Customer</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Decision_To_New_Customer</name>
+        <label>New Type is New Customer?</label>
+        <locationX>176</locationX>
+        <locationY>720</locationY>
+        <defaultConnector><targetReference>Update_Opportunity</targetReference></defaultConnector>
+        <defaultConnectorLabel>No</defaultConnectorLabel>
+        <rules>
+            <name>Outcome_To_New_Customer</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Input_Type</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>New Customer</stringValue>
+                </rightValue>
+            </conditions>
+            <connector><targetReference>Assignment_Remove_Upsell</targetReference></connector>
+            <label>Yes - Now New Customer</label>
+        </rules>
+    </decisions>
+    <dynamicChoiceSets>
+        <name>PicklistChoiceSet_Type</name>
+        <dataType>Picklist</dataType>
+        <displayField>label</displayField>
+        <picklistField>Type</picklistField>
+        <picklistObject>Opportunity</picklistObject>
+    </dynamicChoiceSets>
+    <formulas>
+        <name>Formula_NameWithoutUpsell</name>
+        <dataType>String</dataType>
+        <expression>SUBSTITUTE({!Get_Opportunity.Name}, &quot; - Upsell/Renewal&quot;, &quot;&quot;)</expression>
+    </formulas>
+    <recordLookups>
+        <name>Get_Opportunity</name>
+        <label>Get Opportunity</label>
+        <locationX>176</locationX>
+        <locationY>120</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector><targetReference>Screen_Update_Type</targetReference></connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value><elementReference>recordId</elementReference></value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Opportunity</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <name>Update_Opportunity</name>
+        <label>Update Opportunity</label>
+        <locationX>176</locationX>
+        <locationY>960</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value><elementReference>recordId</elementReference></value>
+        </filters>
+        <inputAssignments>
+            <field>Name</field>
+            <value><elementReference>var_NewName</elementReference></value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Type</field>
+            <value><elementReference>Input_Type</elementReference></value>
+        </inputAssignments>
+        <object>Opportunity</object>
+    </recordUpdates>
+    <screens>
+        <name>Screen_Update_Type</name>
+        <label>Update Opportunity Type</label>
+        <locationX>176</locationX>
+        <locationY>240</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector><targetReference>Decision_Type_Changed</targetReference></connector>
+        <fields>
+            <name>Input_Type</name>
+            <choiceReferences>PicklistChoiceSet_Type</choiceReferences>
+            <dataType>String</dataType>
+            <defaultValue>
+                <elementReference>Get_Opportunity.Type</elementReference>
+            </defaultValue>
+            <fieldText>Type</fieldText>
+            <fieldType>DropdownBox</fieldType>
+            <isRequired>true</isRequired>
+        </fields>
+        <nextOrFinishButtonLabel>Update Type</nextOrFinishButtonLabel>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <variables>
+        <name>recordId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>var_NewName</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>
